@@ -1,9 +1,12 @@
 {
   "dependencies": {
+    "axios": "^0.18.0",
     "csv-parse": "^3.0.0",
     "global": "^4.3.2",
+    "keymirror": "^0.1.1",
     "mongodb": "^3.1.6",
     "should": "^13.2.3",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.1",
+    "xml2json": "^0.11.2"
   }
 }
