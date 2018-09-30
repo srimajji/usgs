@@ -7,7 +7,7 @@ const xml2json = require("xml2json");
 
 const stateCodes = require("./stateCodes.json");
 const siteTypes = require("./siteParams").siteTypes;
-
+const siteParams = require("./siteParams").siteParams;
 const output = [];
 
 const xml2jsonOptions = {
@@ -22,18 +22,19 @@ const xml2jsonOptions = {
 
 MongoClient.connect(
   "mongodb://localhost:27017",
-  function(err, client) {
+  function (err, client) {
     if (err) {
       return console.dir(err);
     }
     const db = client.db("streamflow");
 
-    db.createCollection("sites", function(err, collection) {
-      Object.keys(stateCodes).forEach(async function(value) {
+    db.createCollection("sites", function (err, collection) {
+      Object.keys(stateCodes).forEach(async function (value) {
         console.log("Parsing state", value);
 
         const siteTypeParams = Object.keys(siteTypes).join(",");
-        const restUrl = `https://waterdata.usgs.gov/nwis/inventory?state_cd=${value}&group_key=NONE&$site_tp_cd=${siteTypeParams}&format=sitefile_output&sitefile_output_format=xml&column_name=agency_cd&column_name=site_no&column_name=station_nm&column_name=site_tp_cd&column_name=dec_lat_va&column_name=dec_long_va&column_name=coord_meth_cd&column_name=coord_acy_cd&column_name=coord_datum_cd&column_name=dec_coord_datum_cd&column_name=district_cd&column_name=state_cd&column_name=county_cd&column_name=country_cd&column_name=tz_cd&list_of_search_criteria=state_cd`;
+        const params = Object.keys(siteParams).join("&column_name=");
+        const restUrl = `https://waterdata.usgs.gov/nwis/inventory?state_cd=${value}&group_key=NONE&$site_tp_cd=${siteTypeParams}&format=sitefile_output&sitefile_output_format=xml&column_name=${params}&list_of_search_criteria=state_cd`;
         try {
           const response = await axios.get(restUrl);
           if (response.data) {
@@ -41,7 +42,21 @@ MongoClient.connect(
               response.data,
               xml2jsonOptions
             );
-            collection.insertMany(jsonResponse.usgs_nwis.site, function(
+            let formattedData = [];
+            jsonResponse.usgs_nwis.site.forEach(function (siteData) {
+              const site = {
+                "agencyCode": siteData[siteParams.agency_cd],
+                "externalId": siteData[siteParams.site_no],
+                "location": { type: "Point", coordinates: [Number.parseFloat(siteData[siteParams.dec_long_va]), Number.parseFloat(siteData[siteParams.dec_lat_va])] },
+                "name": siteData[siteParams.station_nm],
+                "timezone": siteData[siteParams.tz_cd],
+                "county": siteData[siteParams.county_cd],
+                "state": siteData[siteParams.state_cd],
+                "country": siteData[siteParams.country_cd]
+              }
+              formattedData.push(site)
+            })
+            collection.insertMany(formattedData, function (
               err,
               result
             ) {
@@ -49,6 +64,7 @@ MongoClient.connect(
                 console.error("Error db: ", err);
               }
               console.log(result);
+              formattedData = [];
             });
           } else {
             console.error(response.status);

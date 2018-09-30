@@ -20,5 +20,8 @@ module.exports.siteParams = keyMirror({
   dec_lat_va: null,
   dec_long_va: null,
   country_cd: null,
-  tz_cd: null
+  tz_cd: null,
+  "state_cd": null,
+  "district_cd ": null,
+  "county_cd": null
 });
