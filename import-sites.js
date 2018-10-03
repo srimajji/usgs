@@ -8,6 +8,8 @@ const xml2json = require("xml2json");
 const stateCodes = require("./stateCodes.json");
 const siteTypes = require("./siteParams").siteTypes;
 const siteParams = require("./siteParams").siteParams;
+const stateFipsCode = require("./siteParams").stateFipsCode;
+const countyFipsCode = require("./siteParams").countyFipsCode;
 const output = [];
 
 const xml2jsonOptions = {
@@ -43,16 +45,29 @@ MongoClient.connect(
               xml2jsonOptions
             );
             let formattedData = [];
-            jsonResponse.usgs_nwis.site.forEach(function (siteData) {
+            jsonResponse.usgs_nwis.site.map(function (siteData) {
+              const lng = Number.parseFloat(siteData[siteParams.dec_lat_va]);
+              const lat = Number.parseFloat(siteData[siteParams.dec_long_va])
+              if (!lng || !lat || isNaN(lng) || isNaN(lat)) {
+                return;
+              }
+              const countyCode = Number.parseInt(siteData[siteParams.county_cd]);
               const site = {
-                "agencyCode": siteData[siteParams.agency_cd],
+                "agency": siteData[siteParams.agency_cd],
                 "externalId": siteData[siteParams.site_no],
                 "location": { type: "Point", coordinates: [Number.parseFloat(siteData[siteParams.dec_long_va]), Number.parseFloat(siteData[siteParams.dec_lat_va])] },
                 "name": siteData[siteParams.station_nm],
                 "timezone": siteData[siteParams.tz_cd],
-                "county": siteData[siteParams.county_cd],
-                "state": siteData[siteParams.state_cd],
-                "country": siteData[siteParams.country_cd]
+                "county": {
+                  "fipsCode": countyCode,
+                  "name": countyFipsCode[countyCode.toString()]
+                },
+                "state": {
+                  name: stateFipsCode[siteData[siteParams.state_cd]],
+                  fipsCode: Number.parseInt(siteData[siteParams.state_cd])
+                },
+                "country": siteData[siteParams.country_cd],
+                "type": siteData[siteParams.site_tp_cd],
               }
               formattedData.push(site)
             })
@@ -73,34 +88,6 @@ MongoClient.connect(
           console.error("Error getting usgs site", e);
         }
       });
-
-      //   fs.readFile("inventory2.csv", "utf8", function(err, data) {
-      //     // parser(data, { comment: '#' }, function (err, output) {
-      //     //     console.log("This is a test", output);
-      //     // });
-      //     console.log("This");
-      //     const parser = parse({ comment: "#", delimiter: ",", columns: true });
-      //     parser.on("readable", function() {
-      //       while ((record = parser.read())) {
-      //         output.push(record);
-      //         console.log("parting output", output.length);
-      //       }
-      //     });
-      //     parser.on("error", function(err) {
-      //       console.error(err.message);
-      //     });
-      //     parser.on("end", function() {
-      //       console.log("total length", output.length);
-      //       collection.insertMany(output, function(err, result) {
-      //         if (err) {
-      //           console.error("Error db: ", err);
-      //         }
-      //         console.log(result);
-      //       });
-      //     });
-      //     parser.write(data);
-      //     parser.end();
-      //   });
     });
   }
 );

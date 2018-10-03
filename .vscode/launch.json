@@ -9,6 +9,9 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}/import-sites.js",
+      "runtimeArgs": [
+        "--max-old-space-size=2020"
+      ],
       "useWSL": true
     }
   ]
