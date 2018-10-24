@@ -7,8 +7,18 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Import Sites",
       "program": "${workspaceFolder}/import-sites.js",
+      "runtimeArgs": [
+        "--max-old-space-size=2020"
+      ],
+      "useWSL": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Import Water",
+      "program": "${workspaceFolder}/import-water.js",
       "runtimeArgs": [
         "--max-old-space-size=2020"
       ],

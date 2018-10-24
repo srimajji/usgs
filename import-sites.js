@@ -9,6 +9,7 @@ const stateCodes = require("./stateCodes.json");
 const siteTypes = require("./siteParams").siteTypes;
 const siteParams = require("./siteParams").siteParams;
 const stateFipsCode = require("./siteParams").stateFipsCode;
+const statePostalCodes = require("./siteParams").statePostalCodes;
 const countyFipsCode = require("./siteParams").countyFipsCode;
 const output = [];
 
@@ -19,19 +20,32 @@ const xml2jsonOptions = {
   sanitize: true,
   trim: true,
   arrayNotation: false,
-  alternateTextNode: false
+  alternateTextNode: true
+};
+
+const user = encodeURIComponent('streamflow');
+const password = encodeURIComponent('streamflow18');
+const authMechanism = 'SCRAM-SHA-1';
+
+// Connection URL
+const url = `mongodb://${user}:${password}@ds031108.mlab.com:31108?authMechanism=${authMechanism}&authSource=streamflow`;
+const localhost = "mongodb://localhost:27017"
+
+function isXML(str) {
+  return (/^\s*<[\s\S]*>/).test(str);
 };
 
 MongoClient.connect(
-  "mongodb://localhost:27017",
+  localhost,
+  { useNewUrlParser: true },
   function (err, client) {
     if (err) {
       return console.dir(err);
     }
     const db = client.db("streamflow");
 
-    db.createCollection("sites", function (err, collection) {
-      Object.keys(stateCodes).forEach(async function (value) {
+    db.createCollection("site", function (err, collection) {
+      Object.keys(statePostalCodes).forEach(async function (value) {
         console.log("Parsing state", value);
 
         const siteTypeParams = Object.keys(siteTypes).join(",");
@@ -68,6 +82,8 @@ MongoClient.connect(
                 },
                 "country": siteData[siteParams.country_cd],
                 "type": siteData[siteParams.site_tp_cd],
+                "dateCreated": new Date(),
+                "lastUpdated": new Date(),
               }
               formattedData.push(site)
             })
@@ -86,6 +102,7 @@ MongoClient.connect(
           }
         } catch (e) {
           console.error("Error getting usgs site", e);
+          console.error("state: ", value);
         }
       });
     });

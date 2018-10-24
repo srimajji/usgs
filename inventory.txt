@@ -1,36 +1,4 @@
-#
-#
-# US Geological Survey
-# retrieved: 2018-09-28 01:57:45 EDT
-# URL: https://nwis.waterdata.usgs.gov/nwis/inventory
-#
-# The Site File stores location and general information about groundwater,
-# surface water, and meteorological sites
-# for sites in USA.
-#
-# The following selected fields are included in this output:
-#
-#  agency_cd       -- Agency
-#  site_no         -- Site identification number
-#  station_nm      -- Site name
-#  site_tp_cd      -- Site type
-#  lat_va          -- DMS latitude
-#  long_va         -- DMS longitude
-#  dec_lat_va      -- Decimal latitude
-#  dec_long_va     -- Decimal longitude
-#  coord_meth_cd   -- Latitude-longitude method
-#  coord_acy_cd    -- Latitude-longitude accuracy
-#  coord_datum_cd  -- Latitude-longitude datum
-#  dec_coord_datum_cd -- Decimal Latitude-longitude datum
-#  district_cd     -- District code
-#  state_cd        -- State code
-#
-#
-# query started 2018-09-28 01:57:45 EDT
-#
-# there are 3768 sites matching the search criteria.
-#
-#
+
 agency_cd	site_no	station_nm	site_tp_cd	lat_va	long_va	dec_lat_va	dec_long_va	coord_meth_cd	coord_acy_cd	coord_datum_cd	dec_coord_datum_cd	district_cd	state_cd
 5s	15s	50s	7s	11s	12s	16n	16n	1s	1s	10s	10s	3s	2s
 USGS	02339210	WEHADKEE CREEK NEAR PITTMAN AL	ST	331330	0851912	33.22511878	-85.31994730	M	U	NAD27	NAD83	01	01
