@@ -11,6 +11,7 @@ const siteParams = require("./siteParams").siteParams;
 const stateFipsCode = require("./siteParams").stateFipsCode;
 const statePostalCodes = require("./siteParams").statePostalCodes;
 const countyFipsCode = require("./siteParams").countyFipsCode;
+const hucCode = require("./siteParams").hydrologicCd;
 const output = [];
 
 const xml2jsonOptions = {
@@ -23,12 +24,11 @@ const xml2jsonOptions = {
   alternateTextNode: true
 };
 
-const user = encodeURIComponent('streamflow');
-const password = encodeURIComponent('streamflow18');
+const user = encodeURIComponent('fincast');
+const password = encodeURIComponent('fincast');
 const authMechanism = 'SCRAM-SHA-1';
 
 // Connection URL
-const url = `mongodb://${user}:${password}@ds031108.mlab.com:31108?authMechanism=${authMechanism}&authSource=streamflow`;
 const localhost = "mongodb://localhost:27017"
 
 function isXML(str) {
@@ -50,7 +50,7 @@ MongoClient.connect(
 
         const siteTypeParams = Object.keys(siteTypes).join(",");
         const params = Object.keys(siteParams).join("&column_name=");
-        const restUrl = `https://waterdata.usgs.gov/nwis/inventory?state_cd=${value}&group_key=NONE&$site_tp_cd=${siteTypeParams}&format=sitefile_output&sitefile_output_format=xml&column_name=${params}&list_of_search_criteria=state_cd`;
+        const restUrl = `https://waterdata.usgs.gov/nwis/inventory?state_cd=${value}&group_key=NONE&format=sitefile_output&sitefile_output_format=xml&column_name=${params}&list_of_search_criteria=state_cd`;
         try {
           const response = await axios.get(restUrl);
           if (response.data) {
@@ -69,7 +69,11 @@ MongoClient.connect(
               const site = {
                 "agency": siteData[siteParams.agency_cd],
                 "externalId": siteData[siteParams.site_no],
-                "location": { type: "Point", coordinates: [Number.parseFloat(siteData[siteParams.dec_long_va]), Number.parseFloat(siteData[siteParams.dec_lat_va])] },
+                "location": { 
+                  type: "Point", 
+                  coordinates: [Number.parseFloat(siteData[siteParams.dec_long_va]), Number.parseFloat(siteData[siteParams.dec_lat_va])],
+                  accuracy: siteData[siteParams.coord_acy_cd],
+                },
                 "name": siteData[siteParams.station_nm],
                 "timezone": siteData[siteParams.tz_cd],
                 "county": {
@@ -82,6 +86,7 @@ MongoClient.connect(
                 },
                 "country": siteData[siteParams.country_cd],
                 "type": siteData[siteParams.site_tp_cd],
+                "source": "USGS",
                 "dateCreated": new Date(),
                 "lastUpdated": new Date(),
               }
@@ -94,8 +99,13 @@ MongoClient.connect(
               if (err) {
                 console.error("Error db: ", err);
               }
-              console.log(result);
-              formattedData = [];
+              if (result) {
+                console.log(result, value);
+                formattedData = [];
+              } else {
+                console.log("null result for", value);
+              }
+
             });
           } else {
             console.error(response.status);

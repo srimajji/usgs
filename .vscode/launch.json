@@ -10,7 +10,7 @@
       "name": "Import Sites",
       "program": "${workspaceFolder}/import-sites.js",
       "runtimeArgs": [
-        "--max-old-space-size=2020"
+        "--max-old-space-size=8192"
       ],
       "useWSL": true
     },
@@ -20,7 +20,7 @@
       "name": "Import Water",
       "program": "${workspaceFolder}/import-water.js",
       "runtimeArgs": [
-        "--max-old-space-size=2020"
+        "--max-old-space-size=8192"
       ],
       "useWSL": true
     }
